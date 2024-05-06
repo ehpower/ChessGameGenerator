@@ -1,0 +1,59 @@
+def GameGenerator2(player1,player2,gamesperround, roundperday):
+  Sat_games={}
+  Sun_games={}
+  dimi=player1.copy()
+  paki=player2.copy()
+  possible_games = []
+  normal_games = []
+  Nacho_games=[]
+  for i in range(roundperday):
+    Sat_games[i+1]=[]
+    Sun_games[i+1]=[]
+
+  #Mezclamos aleatoriamente el orden de equipos
+  random.shuffle(dimi)
+  random.shuffle(paki)
+
+  df = pd.DataFrame(data=dimi, columns=['T1'])
+  df2 = pd.DataFrame(data=paki, columns=['T2'])
+  df['join'] = 1
+  df2['join'] = 1
+
+  df_output = pd.merge(df,df2, on='join')
+
+
+  for i in range(len(df_output['join'])):
+    possible_games.append(df_output.loc[i]['T1'] + " vs " +df_output.loc[i]['T2'] )
+
+
+  for i in range(len(possible_games)):
+    if 'NacNac' in possible_games[i]:
+       Nacho_games.append(possible_games[i])
+    else:
+      normal_games.append(possible_games[i])
+
+
+  for i in range(len(Sat_games)):
+    while len(Sat_games[i+1]) < gamesperround and normal_games:
+      random.shuffle(normal_games)
+      game = normal_games.pop()
+      if all(game.split(' vs ')[0] != Sat_games[i + 1][j].split(' vs ')[0] and game.split(' vs ')[0] != Sat_games[i + 1][j].split(' vs ')[1] and game.split(' vs ')[1] != Sat_games[i + 1][j].split(' vs ')[0] and game.split(' vs ')[1] != Sat_games[i + 1][j].split(' vs ')[1] for j in range(len(Sat_games[i + 1]))):
+        Sat_games[i + 1].append(game)
+      else:
+            normal_games.append(game)
+
+  #Todas las partidas de nacho se asignan al sabado
+  for i in range(len(Nacho_games)):
+    Sun_games[i+1].append(Nacho_games[i])
+
+
+  for i in range(len(Sun_games)):
+    while len(Sun_games[i+1]) < gamesperround and normal_games:
+      random.shuffle(normal_games)
+
+      game = normal_games.pop()
+      if all(game.split(' vs ')[0] != Sun_games[i + 1][j].split(' vs ')[0] and game.split(' vs ')[0] != Sun_games[i + 1][j].split(' vs ')[1] and game.split(' vs ')[1] != Sun_games[i + 1][j].split(' vs ')[0] and game.split(' vs ')[1] != Sun_games[i + 1][j].split(' vs ')[1] for j in range(len(Sun_games[i + 1]))):
+        Sun_games[i + 1].append(game)
+      else:
+        normal_games.append(game)
+  return(Sat_games, Sun_games)
